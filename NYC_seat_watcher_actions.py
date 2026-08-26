@@ -58,7 +58,8 @@ def _load_ntfy_token():
                                "ntfy_token.txt"), encoding="utf-8", errors="ignore") as f:
             return _extract_token(f.read())
     except Exception:
-        return ""NTFY_TOKEN = _load_ntfy_token()
+        return ""
+NTFY_TOKEN = _load_ntfy_token()
 
 # ============================ CONFIG ============================
 
@@ -140,7 +141,11 @@ SHOWTIME_ID_RE = re.compile(r'(?:/showtimes/|"showtimeId":)(\d+)')
 
 
 def date_range():
-    start = dt.date.fromisoformat(START_DATE) if START_DATE else dt.date.today()
+    start = (
+        dt.date.fromisoformat(START_DATE)
+        if START_DATE
+        else dt.datetime.now(ZoneInfo(THEATRE_TZ)).date()
+    )
     end = dt.date.fromisoformat(END_DATE)
     return [(start + dt.timedelta(days=i)).isoformat()
             for i in range((end - start).days + 1)]
