@@ -1,0 +1,42 @@
+name: AMC IMAX Ticket Tracker
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-tracker:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run NYC Tracker
+        env:
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+        run: python NYC_seat_watcher_actions.py
+
+      - name: Commit State File
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update state JSON [skip ci]"
+          file_pattern: "state_nyc.json"
