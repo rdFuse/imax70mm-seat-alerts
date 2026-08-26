@@ -1,0 +1,5 @@
+ntfy_token.txt
+*.rtf
+__pycache__/
+*.pyc
+.DS_Store
