@@ -1,0 +1,43 @@
+name: CityWalk IMAX 70mm Seat Tracker
+
+on:
+  workflow_dispatch:     # lets you trigger it manually from the Actions tab,
+                         # and is what the external scheduler (cron-job.org) calls
+  # schedule:            # left here for reference -- proved unreliable in testing
+  #   - cron: "*/8 * * * *"
+
+concurrency:
+  group: amc-citywalk-seat-tracker
+  cancel-in-progress: false   # never cancel a run already in progress; let it finish
+
+jobs:
+  check-seats:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10       # safety net so a stuck run can't hang forever
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run CityWalk watcher (single sweep)
+        env:
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+        run: python CITYWALK_seat_watcher_actions.py
+
+      - name: Commit updated state file (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state_citywalk.json
+          git diff --cached --quiet || git commit -m "Update CityWalk state [skip ci]"
+          git push
