@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+  concurrency:
+  group: nyc-tracker
+  cancel-in-progress: false
+  
 jobs:
   run-tracker:
     runs-on: ubuntu-22.04
