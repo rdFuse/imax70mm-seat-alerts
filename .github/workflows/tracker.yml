@@ -8,7 +8,7 @@ on:
 permissions:
   contents: write
 
-  concurrency:
+concurrency:
   group: nyc-tracker
   cancel-in-progress: false
   
