@@ -39,5 +39,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add state_citywalk.json
-          git diff --cached --quiet || git commit -m "Update CityWalk state [skip ci]"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "No state changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Update CityWalk state [skip ci]"
+
+          for i in {1..5}; do
+            echo "Push attempt $i/5..."
+
+            if git pull --rebase origin main && git push; then
+              echo "Push successful!"
+              exit 0
+            fi
+
+            echo "Push/rebase failed. Retrying..."
+            sleep $((RANDOM % 5 + 2))
+          done
+
+          echo "Failed to push after 5 attempts."
+          exit 1
